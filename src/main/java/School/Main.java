@@ -32,6 +32,7 @@ public class Main {
         teacherIdCounter = maxId + 1;
     }
 
+
     public static void exportStudentsToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("students.txt"))) {
             // Loop through all students and write their details to the file
@@ -159,6 +160,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        loadStudentsFromDB();
+
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
 
@@ -261,6 +264,16 @@ public class Main {
             }
         }
         scanner.close();
+    }
+
+    private static void syncStudentIdCounterWithDB() {
+        int maxId = studentDAO.getMaxStudentId();
+        studentIdCounter = maxId + 1;
+    }
+
+    private static void loadStudentsFromDB() {
+        students = studentDAO.getAllStudents();
+        syncStudentIdCounterWithDB();
     }
 
     private static void addStudent(Scanner scanner) {
