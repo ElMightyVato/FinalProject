@@ -16,6 +16,22 @@ public class Main {
     static List<Teacher> teachers = new ArrayList<>();
     private static List<Course> courses = new ArrayList<>();
 
+    private static void updateStudentIdCounter() {
+        int maxId = students.stream()
+                            .mapToInt(Student::getStudentId)
+                            .max()
+                            .orElse(0);
+        studentIdCounter = maxId + 1;
+    }
+
+    private static void updateTeacherIdCounter() {
+        int maxId = teachers.stream()
+                .mapToInt(Teacher::getTeacherId)
+                .max()
+                .orElse(0);
+        teacherIdCounter = maxId + 1;
+    }
+
     public static void exportStudentsToFile() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("students.txt"))) {
             // Loop through all students and write their details to the file
@@ -67,6 +83,9 @@ public class Main {
         } catch (IOException e) {
             System.out.println("Error importing students: " + e.getMessage());
         }
+
+        // Update the studentIdCounter after import to avoid conflicts!
+        updateStudentIdCounter();
     }
 
     public static void importTeachersFromFile() {
@@ -90,6 +109,8 @@ public class Main {
         } catch (IOException e) {
             System.out.println("Error importing teachers: " + e.getMessage());
         }
+
+        updateTeacherIdCounter();
     }
 
 
@@ -581,22 +602,32 @@ public class Main {
     public static void processStudentsConcurrently() {
         int mid = students.size() / 2;
 
+        // Define the first task to process the first half of the students list
         Runnable task1 = () -> {
-            System.out.println("\nThread 1: First Half of Students");
+            // Get the current thread's name for clarity in output
+            String threadName = Thread.currentThread().getName();
+
+            System.out.println("\n" + threadName + ": First Half of Students");
+
+            // For each student in the first half, print the thread name prefix should help make it clear which thread is printing who!
             for (int i = 0; i < mid; i++) {
-                System.out.println(students.get(i));
+                System.out.println("[" + threadName + "]" + students.get(i));
             }
         };
 
+        // Second task being defined
         Runnable task2 = () -> {
-            System.out.println("\nThread 2: Second Half of Students");
+            String threadName = Thread.currentThread().getName();
+
+            System.out.println("\n" + threadName + ": Second Half of Students");
+
             for (int i = mid; i < students.size(); i++) {
-                System.out.println(students.get(i));
+                System.out.println("[" + threadName + "]" + students.get(i));
             }
         };
 
-        Thread thread1 = new Thread(task1);
-        Thread thread2 = new Thread(task2);
+        Thread thread1 = new Thread(task1, "Thread-1");
+        Thread thread2 = new Thread(task2, "Thread-2");
 
         thread1.start();
         thread2.start();

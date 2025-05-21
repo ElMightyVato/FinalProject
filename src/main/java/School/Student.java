@@ -40,6 +40,9 @@ public class Student extends Person {
     }
 
     public void setGrade(int grade) {
+        if (grade < 1 || grade > 12) {
+            throw new IllegalArgumentException("Grade must be between 1 and 12.");
+        }
         this.grade = grade;
     }
 

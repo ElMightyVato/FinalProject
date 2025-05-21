@@ -2,6 +2,7 @@ package School;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class StudentDAO {
 
@@ -25,6 +26,10 @@ public class StudentDAO {
     }
 
     public void insertStudent(Student student) {
+        if (student.getGrade() < 1 || student.getGrade() > 12) {
+            throw new IllegalArgumentException("Grade must be between 1 and 12.");
+        }
+
         String sql = "INSERT INTO students (id, name, age, email, grade) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -61,6 +66,10 @@ public class StudentDAO {
     }
 
     public void updateStudent(Student student) {
+        if (student.getGrade() < 1 || student.getGrade() > 12) {
+            throw new IllegalArgumentException("Grade must be between 1 and 12.");
+        }
+
         String sql = "UPDATE students SET name = ?, age = ?, email = ?, grade = ? WHERE id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -106,5 +115,53 @@ public class StudentDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public int getMaxStudentId() {
+        String sql = "SELECT MAX(id) as max_id FROM students";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                return rs.getInt("max_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return 0; // No Students yet
+    }
+
+    // Created this for student input validation and unique IDs
+    public void createStudentWithValidation() throws IllegalArgumentException, NumberFormatException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter student name: ");
+        String name = scanner.nextLine();
+
+        System.out.print("Enter student age: ");
+        int age = Integer.parseInt(scanner.nextLine());
+
+        System.out.print("Enter student email: ");
+        String email = scanner.nextLine();
+
+        int grade;
+
+        while (true) {
+            try {
+                System.out.print("Enter grade (1-12): ");
+                grade = Integer.parseInt(scanner.nextLine());
+                if (grade < 1 || grade > 12) {
+                    throw new IllegalArgumentException("Grade must be between 1 and 12.");
+                }
+                break;
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid grade. Please enter a number between 1 and 12.");
+            }
+            }
+
+                int newID = getMaxStudentId() + 1;
+        Student student = new Student(name, age, email, grade, newID);
+        insertStudent(student);
+        System.out.println("Student added with ID: " + newID);
     }
 }
